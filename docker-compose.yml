@@ -1,0 +1,37 @@
+version: "3.9"
+   
+services:
+  db:
+    #restart: always
+    image: postgres
+    volumes:
+      - ./data/db:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    healthcheck:
+        test: [ "CMD", "pg_isready", "-q", "-d", "postgres", "-U", "postgres" ]
+        timeout: 45s
+        interval: 5s
+        retries: 10
+  
+  web:
+    restart: always
+    build: .
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/code
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - POSTGRES_NAME=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - ALLOWED_HOSTS=['*']
+      - LANGUAGE_CODE=pt-br
+      - TIME_ZONE=America/Sao_Paulo
+      - SECRET_KEY=zfs%kuczgp1=5iip#e_jspr!bn24_(%mx+lk#&hps*a6vh5l3f
